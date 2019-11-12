@@ -49,6 +49,99 @@ bool HelloWorld::init()
         return false;
     }
 
+	auto sizeInpixels = Director::getInstance()->getWinSizeInPixels();
+	auto size = Director::getInstance()->getWinSize();
+
+	auto layer1 = Layer::create();
+	auto camera1 = Camera::create();
+	camera1->setPosition3D(Vec3(size.width / 2, size.height / 2, 700.0f));
+	camera1->lookAt(Vec3::ZERO);
+	camera1->setRotation3D(Vec3::ZERO);
+	camera1->setCameraFlag(CameraFlag::USER1);
+	layer1->addChild(camera1 , 1);
+	this->addChild(layer1, 1);
+
+	//Down Side part
+	auto fboSize = Size(sizeInpixels.width, sizeInpixels.height / 2);
+	auto fboDown = experimental::FrameBuffer::create(1, fboSize.width, fboSize.height);
+
+	auto rtDown = experimental::RenderTarget::create(fboSize.width, fboSize.height);
+	auto rtDSDown = experimental::RenderTargetDepthStencil::create(fboSize.width, fboSize.height);
+	fboDown->attachRenderTarget(rtDown);
+	fboDown->attachDepthStencilTarget(rtDSDown);
+
+	
+	auto camera2 = Camera::create();
+	auto spriteDown = Sprite::createWithTexture(fboDown->getRenderTarget()->getTexture());
+	spriteDown->setFlippedY(true);
+	spriteDown->setPosition(0.0f, 0.0f);
+	spriteDown->setAnchorPoint(Vec2(0.0f, 0.0f));
+	spriteDown->setCameraMask(static_cast<int>(CameraFlag::USER1));
+	layer1->addChild(spriteDown, 2);
+
+	
+	//camera2 = Camera::createPerspective(60, (GLfloat)fboSize.width / fboSize.height, 0.0f, 3000.0f);
+	//camera2 = Camera::createOrthographic(fboSize.width, fboSize.height, 1.0f, 1000.0f);
+	//
+	camera2->setDepth(-1);
+	camera2->setFrameBufferObject(fboDown);
+	camera2->setCameraFlag(CameraFlag::USER2);
+
+	auto layer2 = Layer::create();
+	layer2->addChild(camera2);
+	layer2->setCameraMask(static_cast<int>(CameraFlag::USER2));
+
+	//experimental::Viewport vp = experimental::Viewport(0.0f, 0.0f, size.width, size.height / 2);
+	//m_camera->setViewport(vp);
+
+	camera2->setPosition3D(Vec3(0.f, 0.f, 700.0f));
+	camera2->lookAt(Vec3::ZERO);
+	camera2->setRotation3D(Vec3::ZERO);
+
+	layer1->addChild(layer2, 2);
+	
+	
+
+	//Up Side part
+	auto fboUp = experimental::FrameBuffer::create(1, fboSize.width, fboSize.height);
+
+	auto rtUp = experimental::RenderTarget::create(fboSize.width, fboSize.height);
+	auto rtDSUp = experimental::RenderTargetDepthStencil::create(fboSize.width, fboSize.height);
+	fboUp->attachRenderTarget(rtUp);
+	fboUp->attachDepthStencilTarget(rtDSUp);
+
+
+	auto camera3 = Camera::create();
+	auto spriteUp = Sprite::createWithTexture(fboUp->getRenderTarget()->getTexture());
+	spriteUp->setFlippedY(true);
+	spriteUp->setPosition(0.0f, fboSize.height);
+	spriteUp->setAnchorPoint(Vec2(0.0f, 0.0f));
+	spriteUp->setCameraMask(static_cast<int>(CameraFlag::USER1));
+	layer1->addChild(spriteUp, 3);
+
+
+	//camera2 = Camera::createPerspective(60, (GLfloat)fboSize.width / fboSize.height, 0.0f, 3000.0f);
+	//camera2 = Camera::createOrthographic(fboSize.width, fboSize.height, 1.0f, 1000.0f);
+	//
+	camera3->setDepth(-1);
+	camera3->setFrameBufferObject(fboUp);
+	camera3->setCameraFlag(CameraFlag::USER3);
+
+	auto layer3 = Layer::create();
+	layer3->addChild(camera3);
+	layer3->setCameraMask(static_cast<int>(CameraFlag::USER3));
+
+	//experimental::Viewport vp = experimental::Viewport(0.0f, 0.0f, size.width, size.height / 2);
+	//m_camera->setViewport(vp);
+
+	camera3->setPosition3D(Vec3(0.f, 0.f, 700.0f));
+	camera3->lookAt(Vec3::ZERO);
+	camera3->setRotation3D(Vec3::ZERO);
+
+	layer1->addChild(layer3, 3);
+
+
+
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
@@ -78,7 +171,7 @@ bool HelloWorld::init()
     // create menu, it's an autorelease object
     auto menu = Menu::create(closeItem, NULL);
     menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
+    layer1->addChild(menu, 5);
 
     /////////////////////////////
     // 3. add your codes below...
@@ -86,35 +179,40 @@ bool HelloWorld::init()
     // add a label shows "Hello World"
     // create and initialize a label
 
-    auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
-    if (label == nullptr)
-    {
-        problemLoading("'fonts/Marker Felt.ttf'");
-    }
-    else
-    {
-        // position the label on the center of the screen
-        label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                                origin.y + visibleSize.height - label->getContentSize().height));
-
-        // add the label as a child to this layer
-        this->addChild(label, 1);
-    }
+    
 
     // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-    if (sprite == nullptr)
+    auto player1 = Sprite::create("HelloWorld.png");
+    if (player1 == nullptr)
     {
         problemLoading("'HelloWorld.png'");
     }
     else
     {
         // position the sprite on the center of the screen
-        sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
+		player1->setPosition(0, 0);
 
         // add the sprite as a child to this layer
-        this->addChild(sprite, 0);
+        layer2->addChild(player1, 1);
+		player1->setCameraMask(static_cast<int>(CameraFlag::USER2));
     }
+
+
+	auto player2 = Sprite::create("HelloWorld.png");
+	if (player2 == nullptr)
+	{
+		problemLoading("'HelloWorld.png'");
+	}
+	else
+	{
+		// position the sprite on the center of the screen
+		player2->setPosition(0, 0);
+
+		// add the sprite as a child to this layer
+		layer3->addChild(player2, 0);
+		player2->setCameraMask(static_cast<int>(CameraFlag::USER3));
+	}
+
     return true;
 }
 
